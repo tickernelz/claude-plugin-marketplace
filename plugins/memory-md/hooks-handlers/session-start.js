@@ -52,7 +52,6 @@ const bootstrapContent = readFile(bootstrapPath);
 const memoryContent = readFile(memoryPath);
 const identityContent = readFile(identityPath);
 const userContent = readFile(userPath);
-const dailyContent = readFile(dailyPath);
 
 let additionalContext = '';
 
@@ -70,9 +69,18 @@ This is the user's FIRST RUN. You MUST:
 1. Read BOOTSTRAP.md content above carefully
 2. Ask the user questions ONE BY ONE from the "Questions" section
 3. Do NOT ask multiple questions at once - wait for each answer
-4. After collecting all answers, create MEMORY.md, IDENTITY.md, and USER.md using /memory-md write
-5. Delete BOOTSTRAP.md using /memory-md delete bootstrap
+4. After collecting all answers, create MEMORY.md, IDENTITY.md, and USER.md using the memory_write MCP tool
+5. Delete BOOTSTRAP.md using the memory_delete MCP tool
 6. Confirm setup is complete
+
+## MCP Tools Available
+
+Use these MCP tools (not slash commands):
+- memory_read - Read memory files
+- memory_write - Write to memory files
+- memory_delete - Delete memory files
+
+Example: Call memory_write with target="memory" and content="User prefers Python"
 
 Start by asking the first question from BOOTSTRAP.md now.`;
 } else if (memoryContent || identityContent || userContent) {
@@ -81,7 +89,6 @@ Start by asking the first question from BOOTSTRAP.md now.`;
   if (identityContent) sections.push(`## IDENTITY.md\n\n${identityContent}`);
   if (userContent) sections.push(`## USER.md\n\n${userContent}`);
 
-  const memoryLoaded = sections.length > 0;
   const dailyExists = fileExists(dailyPath);
 
   additionalContext = `# MEMORY CONTEXT LOADED
@@ -98,14 +105,14 @@ ${dailyExists ? `Today log exists: daily/${today}.md` : `No daily log for today 
 
 ## YOUR BEHAVIOR INSTRUCTIONS
 
-You have memory-md plugin active. Follow these rules:
+You have memory-md plugin with MCP tools active. Follow these rules:
 
 ### 1. Daily Memory (PROACTIVE - NO USER PROMPT NEEDED)
 
 You MUST proactively update daily logs without being asked:
 
 - At the end of each significant task or conversation, append a summary to daily log
-- Use: /memory-md write daily "Summary of what we did"
+- Use MCP tool: memory_write with target="daily" and content="Summary of what we did"
 - Include: task completed, decisions made, problems solved, next steps
 - Do NOT ask user permission - just do it
 - If daily log for today does not exist, create it automatically
@@ -116,21 +123,21 @@ When you learn important information:
 - User preferences that should persist
 - Important project decisions
 - Recurring patterns or conventions
-- Use: /memory-md write memory "Important fact to remember"
+- Use MCP tool: memory_write with target="memory" and content="Important fact"
 
 ### 3. Before Every Response
 
-1. Check MEMORY.md for relevant context to the current task
+1. Check MEMORY.md for relevant context using memory_read
 2. Check IDENTITY.md for how you should behave
 3. Consider if current activity should be logged to daily
 
-### 4. Command Reference
+### 4. MCP Tools Reference
 
-- /memory-md read memory|identity|user|daily
-- /memory-md write memory "content" --mode append|overwrite
-- /memory-md write daily "content"
-- /memory-md search "query"
-- /memory-md list
+- memory_read(target, date?) - Read memory, identity, user, daily, or bootstrap
+- memory_write(target, content, mode?, date?) - Write to memory files
+- memory_search(query, max_results?) - Search across all memory files
+- memory_list() - List all memory files
+- memory_delete(target, date?) - Delete memory files
 
 ### 5. Daily Log Format
 
@@ -141,7 +148,7 @@ When writing to daily log, use format:
 
 ---
 
-NOW BEGIN SESSION. Use memory context above and proactively log activities.`;
+NOW BEGIN SESSION. Use memory context above and proactively log activities using MCP tools.`;
 }
 
 const output = {

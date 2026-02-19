@@ -13,8 +13,8 @@
   "plugins": [
     {
       "name": "memory-md",
-      "description": "Persistent markdown-based memory system with MEMORY.md, IDENTITY.md, USER.md, and daily logs",
-      "version": "1.0.2",
+      "description": "Persistent markdown-based memory system with MCP tools for MEMORY.md, IDENTITY.md, USER.md, and daily logs",
+      "version": "1.0.3",
       "source": "./plugins/memory-md",
       "category": "productivity",
       "author": {
