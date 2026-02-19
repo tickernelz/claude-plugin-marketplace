@@ -1,0 +1,9 @@
+{
+  "name": "memory-md",
+  "version": "1.0.0",
+  "description": "Persistent markdown-based memory system for Claude Code",
+  "author": {
+    "name": "tickernelz"
+  },
+  "license": "MIT"
+}
