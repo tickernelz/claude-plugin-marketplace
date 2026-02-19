@@ -1,6 +1,6 @@
 {
   "name": "tickernelz",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Personal plugin marketplace by tickernelz",
   "owner": {
     "name": "tickernelz",
@@ -14,7 +14,7 @@
     {
       "name": "memory-md",
       "description": "Persistent markdown-based memory system with MEMORY.md, IDENTITY.md, USER.md, and daily logs",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "source": "./plugins/memory-md",
       "category": "productivity",
       "author": {
