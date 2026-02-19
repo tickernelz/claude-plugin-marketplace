@@ -243,7 +243,7 @@ const handlers = {
     return {
       protocolVersion: '2024-11-05',
       capabilities: { tools: {} },
-      serverInfo: { name: 'memory-md', version: '1.0.3' }
+      serverInfo: { name: 'memory-md', version: '1.0' }
     };
   },
 

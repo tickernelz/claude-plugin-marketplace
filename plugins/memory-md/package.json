@@ -1,11 +1,7 @@
 {
   "name": "memory-md",
-  "version": "1.0.4",
   "description": "Persistent markdown-based memory system for Claude Code",
   "main": "mcp-server.js",
-  "bin": {
-    "memory-md-server": "./mcp-server.js"
-  },
   "scripts": {
     "start": "node mcp-server.js"
   },

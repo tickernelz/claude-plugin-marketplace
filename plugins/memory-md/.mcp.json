@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "memory-md": {
+    "server": {
       "command": "node",
       "args": ["${CLAUDE_PLUGIN_ROOT}/mcp-server.js"]
     }
