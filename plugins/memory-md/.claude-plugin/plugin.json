@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "Persistent markdown-based memory system for Claude Code",
   "author": {
-    "name": "tickernelz"
+    "name": "tickernelz",
+    "email": "zhafronadani@gmail.com"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "commands": "./commands",
+  "hooks": "./hooks"
 }
