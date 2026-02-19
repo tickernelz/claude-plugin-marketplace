@@ -1,6 +1,6 @@
 {
   "name": "memory-md",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Persistent markdown-based memory system for Claude Code",
   "main": "mcp-server.js",
   "bin": {
@@ -11,9 +11,5 @@
   },
   "keywords": ["claude-code", "memory", "mcp"],
   "author": "tickernelz <zhafronadani@gmail.com>",
-  "license": "MIT",
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.26.0",
-    "zod": "^4.3.6"
-  }
+  "license": "MIT"
 }

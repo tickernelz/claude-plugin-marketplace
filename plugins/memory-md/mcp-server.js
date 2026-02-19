@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 
-const { Server } = require('@modelcontextprotocol/sdk/server/index.js');
-const { StdioServerTransport } = require('@modelcontextprotocol/sdk/server/stdio.js');
-const { CallToolRequestSchema, ListToolsRequestSchema } = require('@modelcontextprotocol/sdk/types.js');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -127,140 +124,73 @@ function listFiles() {
   return { root, daily };
 }
 
-const server = new Server(
-  {
-    name: 'memory-md',
-    version: '1.0.3'
+const tools = {
+  memory_read: {
+    description: 'Read a memory file (memory, identity, user, daily, or bootstrap)',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        target: { type: 'string', enum: ['memory', 'identity', 'user', 'daily', 'bootstrap'] },
+        date: { type: 'string', description: 'Date for daily log (YYYY-MM-DD)' }
+      },
+      required: ['target']
+    }
   },
-  {
-    capabilities: {
-      tools: {}
+  memory_write: {
+    description: 'Write to a memory file',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        target: { type: 'string', enum: ['memory', 'identity', 'user', 'daily'] },
+        content: { type: 'string' },
+        mode: { type: 'string', enum: ['append', 'overwrite'] },
+        date: { type: 'string' }
+      },
+      required: ['target', 'content']
+    }
+  },
+  memory_search: {
+    description: 'Search across all memory files',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string' },
+        max_results: { type: 'number' }
+      },
+      required: ['query']
+    }
+  },
+  memory_list: {
+    description: 'List all memory files',
+    inputSchema: { type: 'object', properties: {} }
+  },
+  memory_delete: {
+    description: 'Delete a memory file',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        target: { type: 'string', enum: ['memory', 'identity', 'user', 'daily', 'bootstrap'] },
+        date: { type: 'string' }
+      },
+      required: ['target']
     }
   }
-);
+};
 
-server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return {
-    tools: [
-      {
-        name: 'memory_read',
-        description: 'Read a memory file (memory, identity, user, daily, or bootstrap)',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            target: {
-              type: 'string',
-              enum: ['memory', 'identity', 'user', 'daily', 'bootstrap'],
-              description: 'Which memory file to read'
-            },
-            date: {
-              type: 'string',
-              description: 'Date for daily log (YYYY-MM-DD), defaults to today'
-            }
-          },
-          required: ['target']
-        }
-      },
-      {
-        name: 'memory_write',
-        description: 'Write to a memory file',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            target: {
-              type: 'string',
-              enum: ['memory', 'identity', 'user', 'daily'],
-              description: 'Which memory file to write to'
-            },
-            content: {
-              type: 'string',
-              description: 'Content to write'
-            },
-            mode: {
-              type: 'string',
-              enum: ['append', 'overwrite'],
-              description: 'Write mode (default: append)'
-            },
-            date: {
-              type: 'string',
-              description: 'Date for daily log (YYYY-MM-DD), defaults to today'
-            }
-          },
-          required: ['target', 'content']
-        }
-      },
-      {
-        name: 'memory_search',
-        description: 'Search across all memory files',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            query: {
-              type: 'string',
-              description: 'Search query'
-            },
-            max_results: {
-              type: 'number',
-              description: 'Maximum results (default: 20)'
-            }
-          },
-          required: ['query']
-        }
-      },
-      {
-        name: 'memory_list',
-        description: 'List all memory files',
-        inputSchema: {
-          type: 'object',
-          properties: {}
-        }
-      },
-      {
-        name: 'memory_delete',
-        description: 'Delete a memory file (typically for BOOTSTRAP.md cleanup)',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            target: {
-              type: 'string',
-              enum: ['memory', 'identity', 'user', 'daily', 'bootstrap'],
-              description: 'Which memory file to delete'
-            },
-            date: {
-              type: 'string',
-              description: 'Date for daily log (YYYY-MM-DD)'
-            }
-          },
-          required: ['target']
-        }
-      }
-    ]
-  };
-});
-
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const { name, arguments: args } = request.params;
-
+function handleToolCall(name, args) {
   switch (name) {
     case 'memory_read': {
       const { target, date } = args;
       const filePath = getFilePath(target, date);
-      if (!filePath) {
-        return { content: [{ type: 'text', text: 'Invalid target' }] };
-      }
+      if (!filePath) return { content: [{ type: 'text', text: 'Invalid target' }] };
       const content = readFile(filePath);
-      if (!content) {
-        return { content: [{ type: 'text', text: `${target} not found or empty.` }] };
-      }
-      return { content: [{ type: 'text', text: content }] };
+      return { content: [{ type: 'text', text: content || `${target} not found or empty.` }] };
     }
 
     case 'memory_write': {
       const { target, content, mode, date } = args;
       const filePath = getFilePath(target, date);
-      if (!filePath) {
-        return { content: [{ type: 'text', text: 'Invalid target' }] };
-      }
+      if (!filePath) return { content: [{ type: 'text', text: 'Invalid target' }] };
       if (mode === 'overwrite') {
         const timestamp = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
         writeFile(filePath, `<!-- last updated: ${timestamp} -->\n${content}`);
@@ -291,33 +221,83 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const more = files.daily.length > 10 ? `\n... and ${files.daily.length - 10} more` : '';
         parts.push(`Daily logs (${files.daily.length}):\n${displayDaily.map(f => `- daily/${f}`).join('\n')}${more}`);
       }
-      if (parts.length === 0) {
-        return { content: [{ type: 'text', text: 'No memory files found.' }] };
-      }
-      return { content: [{ type: 'text', text: parts.join('\n\n') }] };
+      return { content: [{ type: 'text', text: parts.length > 0 ? parts.join('\n\n') : 'No memory files found.' }] };
     }
 
     case 'memory_delete': {
       const { target, date } = args;
       const filePath = getFilePath(target, date);
-      if (!filePath) {
-        return { content: [{ type: 'text', text: 'Invalid target' }] };
-      }
+      if (!filePath) return { content: [{ type: 'text', text: 'Invalid target' }] };
       const success = deleteFile(filePath);
-      return { content: [{ type: 'text', text: success ? `Deleted ${target}` : `Failed to delete ${target} (file may not exist)` }] };
+      return { content: [{ type: 'text', text: success ? `Deleted ${target}` : `Failed to delete ${target}` }] };
     }
 
     default:
       return { content: [{ type: 'text', text: `Unknown tool: ${name}` }] };
   }
-});
-
-async function main() {
-  ensureDir(memoryDir);
-  ensureDir(dailyDir);
-
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
 }
 
-main().catch(console.error);
+// MCP Protocol handlers
+const handlers = {
+  initialize: (params) => {
+    return {
+      protocolVersion: '2024-11-05',
+      capabilities: { tools: {} },
+      serverInfo: { name: 'memory-md', version: '1.0.3' }
+    };
+  },
+
+  'tools/list': () => {
+    return {
+      tools: Object.entries(tools).map(([name, tool]) => ({
+        name,
+        description: tool.description,
+        inputSchema: tool.inputSchema
+      }))
+    };
+  },
+
+  'tools/call': (params) => {
+    const { name, arguments: args } = params;
+    return handleToolCall(name, args);
+  }
+};
+
+// Main stdio loop
+let buffer = '';
+
+process.stdin.on('data', (chunk) => {
+  buffer += chunk;
+
+  while (true) {
+    const newlineIndex = buffer.indexOf('\n');
+    if (newlineIndex === -1) break;
+
+    const line = buffer.slice(0, newlineIndex).trim();
+    buffer = buffer.slice(newlineIndex + 1);
+
+    if (!line) continue;
+
+    try {
+      const message = JSON.parse(line);
+      const { id, method, params } = message;
+
+      if (handlers[method]) {
+        const result = handlers[method](params || {});
+        console.log(JSON.stringify({ jsonrpc: '2.0', id, result }));
+      } else {
+        console.log(JSON.stringify({
+          jsonrpc: '2.0',
+          id,
+          error: { code: -32601, message: `Method not found: ${method}` }
+        }));
+      }
+    } catch (err) {
+      console.error('Error handling message:', err.message);
+    }
+  }
+});
+
+// Ensure directories exist
+ensureDir(memoryDir);
+ensureDir(dailyDir);
