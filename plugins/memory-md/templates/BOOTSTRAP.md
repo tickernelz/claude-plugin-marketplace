@@ -1,65 +1,92 @@
 # First Run Setup - Memory-md
 
-Welcome! This is your first time using memory-md. I will ask you detailed questions to set up your memory system.
+Welcome! This is your first time using memory-md. I will ask you detailed questions to set up your memory system optimally.
 
-## Setup Process
+## Memory File Purposes (NO OVERLAP)
 
-I will ask you questions one by one. Please answer each question before I proceed to the next.
+| File | Purpose | Examples |
+|------|---------|----------|
+| **USER.md** | About YOU (the human) | Your name, role, how YOU like to work |
+| **IDENTITY.md** | About ME (the AI) | My name, how I should behave, my persona |
+| **MEMORY.md** | Technical knowledge | Tech stacks, coding rules, project decisions |
 
-After gathering all information, I will create:
-- MEMORY.md - Your long-term preferences and important facts
-- IDENTITY.md - How you want me to behave
-- USER.md - Your profile information
+## Golden Rule
+**NEVER put the same information in multiple files.** Each fact goes to exactly one file.
 
-Then I will delete this BOOTSTRAP.md file.
+---
 
 ## Questions
 
-### 1. Your Basic Info (for USER.md)
+### 1. USER.md - About You (The Human)
 
-- What is your full name?
-- What is your role/job title?
-- What timezone are you in?
-- What are your preferred working hours?
-- What language do you prefer for communication?
+**Personal Info:**
+- Your full name?
+- Your role/job title?
+- Your timezone?
+- Preferred working hours?
+- Preferred language for communication?
 
-### 2. Your Tech Preferences (for MEMORY.md)
+**How You Like to Work:**
+- Do you prefer detailed explanations or concise answers?
+- Do you like me to ask before making changes or just do it?
+- Any communication styles you dislike?
 
-- What are your primary programming languages?
-- What frameworks/libraries do you use most?
-- Any specific coding standards or style guides you follow?
-- Preferred database systems?
-- Preferred cloud platforms or hosting?
-- Any tools you absolutely want me to use or avoid?
+### 2. IDENTITY.md - About Me (The AI)
 
-### 3. Project Context (for MEMORY.md)
-
-- What type of projects do you usually work on?
-- Any architectural patterns you prefer (e.g., Clean Architecture, MVC, Microservices)?
-- Testing preferences (TDD, unit vs integration, testing frameworks)?
-- Documentation standards you follow?
-- Any recurring project decisions I should remember?
-
-### 4. My Identity (for IDENTITY.md)
-
+**My Identity:**
 - What name should I use for myself?
 - How formal/casual should I be?
-- Any personality traits you prefer (e.g., concise, detailed, proactive, careful)?
+- My personality (e.g., proactive, careful, direct, friendly)?
+
+**My Behavior Rules:**
 - Should I ask for confirmation before major changes?
-- How do you want me to handle uncertainties or ambiguities?
+- How should I handle uncertainties (ask you vs make educated guesses)?
+- Any phrases or approaches I should always use or avoid?
 
-### 5. Daily Memory Preferences
+### 3. MEMORY.md - Technical & Project Knowledge
 
-- Should I automatically update daily logs with our activities?
-- What level of detail do you want in daily logs (brief summary vs detailed steps)?
-- Any specific things you always want me to track?
+**Tech Stack:**
+- Primary programming languages?
+- Frameworks/libraries you use most?
+- Preferred database systems?
+- Cloud platforms or hosting preferences?
+
+**Coding Standards:**
+- Specific style guides you follow?
+- Testing approach (TDD, unit vs integration)?
+- Documentation standards?
+- Architecture patterns you prefer?
+
+**Important Decisions:**
+- Any conventions you want me to always follow?
+- Tools you absolutely want me to use or avoid?
+- Recurring project patterns I should remember?
+
+---
+
+## What Goes Where (Examples)
+
+### ✅ CORRECT
+- "My name is Zhafron" → **USER.md**
+- "Call yourself Jarvis" → **IDENTITY.md**
+- "Always use PostgreSQL" → **MEMORY.md**
+- "I prefer concise answers" → **USER.md**
+- "Be proactive and suggest improvements" → **IDENTITY.md**
+- "Use TypeScript for all new projects" → **MEMORY.md**
+
+### ❌ INCORRECT (Redundant)
+- Same info in USER.md and MEMORY.md
+- My behavior rules in USER.md (belongs in IDENTITY.md)
+- Your preferences in IDENTITY.md (belongs in USER.md)
+
+---
 
 ## After Setup
 
 I will:
-1. Ask these questions one by one
-2. Create the three memory files based on your answers
+1. Ask these questions **ONE BY ONE** (not all at once)
+2. Create three separate memory files with **NO OVERLAP**
 3. Delete this BOOTSTRAP.md
-4. Start proactively updating your daily memory
+4. Start proactively updating daily logs
 
-Let us begin. Please answer the first question:
+Let us begin. Answer the first question from section 1:

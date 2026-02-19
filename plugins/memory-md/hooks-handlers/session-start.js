@@ -117,13 +117,23 @@ You MUST proactively update daily logs without being asked:
 - Do NOT ask user permission - just do it
 - If daily log for today does not exist, create it automatically
 
-### 2. Long-term Memory (WHEN RELEVANT)
+### 2. Memory Boundaries (CRITICAL - NO REDUNDANCY)
 
-When you learn important information:
-- User preferences that should persist
-- Important project decisions
-- Recurring patterns or conventions
-- Use MCP tool: memory_write with target="memory" and content="Important fact"
+Each file has ONE purpose. Never duplicate information.
+
+| File | Content | When to Write |
+|------|---------|---------------|
+| **USER.md** | User's personal info, preferences | When you learn about the human |
+| **IDENTITY.md** | AI's persona, behavior rules | When defining how you should act |
+| **MEMORY.md** | Technical facts, decisions | When learning about projects/code |
+
+**Examples:**
+- "My name is Zhafron" → USER.md
+- "Call yourself Jarvis" → IDENTITY.md
+- "Always use TypeScript" → MEMORY.md
+- "I prefer short answers" → USER.md
+- "Be proactive" → IDENTITY.md
+- "Use PostgreSQL" → MEMORY.md
 
 ### 3. Before Every Response
 
