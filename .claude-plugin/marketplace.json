@@ -1,27 +1,27 @@
 {
-  "name": "tickernelz",
-  "version": "1.0.2",
-  "description": "Personal plugin marketplace by tickernelz",
-  "owner": {
     "name": "tickernelz",
-    "email": "zhafronadani@gmail.com"
-  },
-  "metadata": {
-    "description": "Collection of productivity plugins for Claude Code",
-    "pluginRoot": "./plugins"
-  },
-  "plugins": [
-    {
-      "name": "memory-md",
-      "description": "Persistent markdown-based memory system with MCP tools for MEMORY.md, IDENTITY.md, USER.md, and daily logs",
-      "version": "1.0.6",
-      "source": "./plugins/memory-md",
-      "category": "productivity",
-      "author": {
-        "name": "tickernelz"
-      },
-      "license": "MIT",
-      "keywords": ["memory", "persistence", "context", "markdown"]
-    }
-  ]
+    "version": "1.0.2",
+    "description": "Personal plugin marketplace by tickernelz",
+    "owner": {
+        "name": "tickernelz",
+        "email": "zhafronadani@gmail.com"
+    },
+    "metadata": {
+        "description": "Collection of productivity plugins for Claude Code",
+        "pluginRoot": "./plugins"
+    },
+    "plugins": [
+        {
+            "name": "memory-md",
+            "description": "Persistent markdown-based memory system with MCP tools for MEMORY.md, IDENTITY.md, USER.md, and daily logs",
+            "version": "1.0.6",
+            "source": "./plugins/memory-md",
+            "category": "productivity",
+            "author": {
+                "name": "tickernelz"
+            },
+            "license": "MIT",
+            "keywords": ["memory", "persistence", "context", "markdown"]
+        }
+    ]
 }

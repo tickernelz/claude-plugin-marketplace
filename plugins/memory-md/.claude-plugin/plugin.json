@@ -1,9 +1,9 @@
 {
-  "name": "memory-md",
-  "description": "Persistent markdown-based memory system for Claude Code",
-  "author": {
-    "name": "tickernelz",
-    "email": "zhafronadani@gmail.com"
-  },
-  "license": "MIT"
+    "name": "memory-md",
+    "description": "Persistent markdown-based memory system for Claude Code",
+    "author": {
+        "name": "tickernelz",
+        "email": "zhafronadani@gmail.com"
+    },
+    "license": "MIT"
 }

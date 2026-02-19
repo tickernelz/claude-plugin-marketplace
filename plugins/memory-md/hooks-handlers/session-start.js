@@ -1,10 +1,6 @@
-const fs = require('fs');
 const path = require('path');
-const os = require('os');
+const { memoryDir, dailyDir, ensureDir, readFile, fileExists, getLocalDate, writeFile } = require('../lib/utils');
 
-const homeDir = os.homedir();
-const memoryDir = path.join(homeDir, '.claude', 'memory');
-const dailyDir = path.join(memoryDir, 'daily');
 const bootstrapPath = path.join(memoryDir, 'BOOTSTRAP.md');
 const memoryPath = path.join(memoryDir, 'MEMORY.md');
 const identityPath = path.join(memoryDir, 'IDENTITY.md');
@@ -12,26 +8,8 @@ const userPath = path.join(memoryDir, 'USER.md');
 const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT || path.dirname(__dirname);
 const templateBootstrapPath = path.join(pluginRoot, 'templates', 'BOOTSTRAP.md');
 
-const today = new Date().toISOString().split('T')[0];
+const today = getLocalDate();
 const dailyPath = path.join(dailyDir, `${today}.md`);
-
-function ensureDir(dir) {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-}
-
-function readFile(filePath) {
-  try {
-    return fs.readFileSync(filePath, 'utf-8');
-  } catch {
-    return null;
-  }
-}
-
-function fileExists(filePath) {
-  return fs.existsSync(filePath);
-}
 
 ensureDir(memoryDir);
 ensureDir(dailyDir);
@@ -42,10 +20,10 @@ const identityExists = fileExists(identityPath);
 const userExists = fileExists(userPath);
 
 if (!bootstrapExists && !memoryExists && !identityExists && !userExists) {
-  const templateContent = readFile(templateBootstrapPath);
-  if (templateContent) {
-    fs.writeFileSync(bootstrapPath, templateContent, 'utf-8');
-  }
+    const templateContent = readFile(templateBootstrapPath);
+    if (templateContent) {
+        writeFile(bootstrapPath, templateContent);
+    }
 }
 
 const bootstrapContent = readFile(bootstrapPath);
@@ -56,7 +34,7 @@ const userContent = readFile(userPath);
 let additionalContext = '';
 
 if (bootstrapContent) {
-  additionalContext = `## FIRST RUN SETUP - ACTION REQUIRED
+    additionalContext = `## FIRST RUN SETUP - ACTION REQUIRED
 
 ${bootstrapContent}
 
@@ -84,14 +62,14 @@ Example: Call memory_write with target="memory" and content="User prefers Python
 
 Start by asking the first question from BOOTSTRAP.md now.`;
 } else if (memoryContent || identityContent || userContent) {
-  const sections = [];
-  if (memoryContent) sections.push(`## MEMORY.md\n\n${memoryContent}`);
-  if (identityContent) sections.push(`## IDENTITY.md\n\n${identityContent}`);
-  if (userContent) sections.push(`## USER.md\n\n${userContent}`);
+    const sections = [];
+    if (memoryContent) sections.push(`## MEMORY.md\n\n${memoryContent}`);
+    if (identityContent) sections.push(`## IDENTITY.md\n\n${identityContent}`);
+    if (userContent) sections.push(`## USER.md\n\n${userContent}`);
 
-  const dailyExists = fileExists(dailyPath);
+    const dailyExists = fileExists(dailyPath);
 
-  additionalContext = `# MEMORY CONTEXT LOADED
+    additionalContext = `# MEMORY CONTEXT LOADED
 
 ${sections.join('\n\n---\n\n')}
 
@@ -162,10 +140,10 @@ NOW BEGIN SESSION. Use memory context above and proactively log activities using
 }
 
 const output = {
-  hookSpecificOutput: {
-    hookEventName: 'SessionStart',
-    additionalContext: additionalContext
-  }
+    hookSpecificOutput: {
+        hookEventName: 'SessionStart',
+        additionalContext: additionalContext
+    }
 };
 
 console.log(JSON.stringify(output));
