@@ -123,7 +123,17 @@ function handleToolCall(name, args) {
             } else {
                 appendFile(filePath, validContent);
             }
-            return createResponse(`${mode === 'overwrite' ? 'Wrote to' : 'Appended to'} ${target}`);
+
+            // ReAct-style reflection prompt for self-improvement
+            const reflectionPrompt = `
+[REFLECTION TRIGGERED]
+After writing to ${target}, ask yourself:
+1. Why was this update important?
+2. What pattern does this reveal about the user or project?
+3. Should this trigger additional memory updates (cross-referencing)?
+4. How does this connect to previous memories?
+`;
+            return createResponse(`${mode === 'overwrite' ? 'Wrote to' : 'Appended to'} ${target}.${reflectionPrompt}`);
         }
 
         case 'memory_search': {
