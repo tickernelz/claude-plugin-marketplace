@@ -8,6 +8,7 @@ const {
     readFile,
     writeFile,
     appendFile,
+    editFile,
     deleteFile,
     getLocalTimestamp,
     getFilePath,
@@ -52,6 +53,28 @@ const tools = {
                 date: { type: 'string' }
             },
             required: ['target', 'content']
+        }
+    },
+    memory_edit: {
+        description:
+            'Edit a specific part of memory/identity/user file (not daily). AI must read file first to get exact oldString.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                target: {
+                    type: 'string',
+                    enum: ['memory', 'identity', 'user']
+                },
+                oldString: {
+                    type: 'string',
+                    description: 'Text to replace. Must read file first to get exact text.'
+                },
+                newString: {
+                    type: 'string',
+                    description: 'Replacement text'
+                }
+            },
+            required: ['target', 'oldString', 'newString']
         }
     },
     memory_search: {
@@ -168,6 +191,34 @@ After writing to ${target}, ask yourself:
             return createResponse(parts.length > 0 ? parts.join('\n\n') : 'No memory files found.');
         }
 
+        case 'memory_edit': {
+            const { target, oldString, newString } = args;
+
+            if (target === 'daily') {
+                return createResponse('Error: edit action is not supported for daily logs. Use append mode instead.');
+            }
+
+            if (!oldString) {
+                return createResponse('Error: oldString is required for edit action.');
+            }
+
+            if (newString === undefined) {
+                return createResponse('Error: newString is required for edit action.');
+            }
+
+            const filePath = getFilePath(target);
+            if (!filePath) {
+                return createResponse('Invalid target');
+            }
+
+            try {
+                editFile(filePath, oldString, newString);
+                return createResponse(`Edited ${target}`);
+            } catch (error) {
+                return createResponse(error.message || `Failed to edit ${target}`);
+            }
+        }
+
         case 'memory_delete': {
             const { target, date } = args;
             const filePath = getFilePath(target, date);
@@ -188,7 +239,7 @@ const handlers = {
         return {
             protocolVersion: '2024-11-05',
             capabilities: { tools: {} },
-            serverInfo: { name: 'memory-md', version: '1.1' }
+            serverInfo: { name: 'memory-md', version: '1.2' }
         };
     },
 

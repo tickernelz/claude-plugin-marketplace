@@ -12,43 +12,23 @@ Personal plugin marketplace for Claude Code.
 
 ### memory-md
 
-Persistent markdown-based memory system.
+Persistent markdown-based memory system with MCP protocol.
 
 ```bash
 /plugin install memory-md@tickernelz
 ```
 
-#### Features
+**Features:**
 
-- MEMORY.md - Long-term memory
-- IDENTITY.md - AI identity/persona
-- USER.md - User profile
-- Daily logs - Day-to-day activities
-- Auto context injection at session start
+- Persistent memory across sessions (MEMORY.md, IDENTITY.md, USER.md)
+- Automatic daily activity logging
+- Proactive memory updates without prompting
+- Edit specific memory sections
+- Full-text search across all memory files
 
-#### Usage
+**Storage:** `~/.claude/memory/`
 
-```bash
-/memory-md read memory
-/memory-md read identity
-/memory-md read user
-/memory-md read daily
-/memory-md write memory "Content"
-/memory-md write identity "Content" --mode overwrite
-/memory-md search "query"
-/memory-md list
-```
-
-#### Storage
-
-`~/.claude/memory/`
-
-#### First Run
-
-1. Plugin creates BOOTSTRAP.md
-2. AI reads BOOTSTRAP.md and asks setup questions
-3. AI writes MEMORY.md, IDENTITY.md, USER.md
-4. Delete BOOTSTRAP.md: `/memory-md delete bootstrap`
+**Documentation:** [plugins/memory-md/README.md](plugins/memory-md/README.md)
 
 ## License
 

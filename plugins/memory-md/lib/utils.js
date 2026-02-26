@@ -40,6 +40,27 @@ function appendFile(filePath, content) {
     writeFile(filePath, existing + separator + stamped);
 }
 
+function editFile(filePath, oldString, newString) {
+    const content = readFile(filePath);
+    if (!content) {
+        throw new Error('File not found or empty');
+    }
+
+    if (!content.includes(oldString)) {
+        throw new Error('oldString not found in file');
+    }
+
+    const matches = content.split(oldString).length - 1;
+    if (matches > 1) {
+        throw new Error(`Found ${matches} occurrences of oldString, expected exactly 1`);
+    }
+
+    const updatedContent = content.replace(oldString, newString);
+    const timestamp = getLocalTimestamp();
+    const stampedContent = `<!-- last updated: ${timestamp} -->\n${updatedContent}`;
+    writeFile(filePath, stampedContent);
+}
+
 function deleteFile(filePath) {
     try {
         fs.unlinkSync(filePath);
@@ -188,6 +209,7 @@ module.exports = {
     readFile,
     writeFile,
     appendFile,
+    editFile,
     deleteFile,
     fileExists,
     getLocalTimestamp,
