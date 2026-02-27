@@ -9,11 +9,5 @@
     "homepage": "https://github.com/tickernelz/claude-plugin-marketplace/tree/main/plugins/memory-md",
     "repository": "https://github.com/tickernelz/claude-plugin-marketplace",
     "license": "MIT",
-    "keywords": ["memory", "persistence", "markdown", "mcp", "context"],
-    "mcpServers": {
-        "memory-md-server": {
-            "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/mcp-server.js"]
-        }
-    }
+    "keywords": ["memory", "persistence", "markdown", "mcp", "context"]
 }
