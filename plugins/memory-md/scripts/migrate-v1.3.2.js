@@ -25,7 +25,7 @@ const { initModel, embedFile } = require(path.join(pluginRoot, 'lib', 'embedding
 const { upsertFile } = require(path.join(pluginRoot, 'lib', 'vector-store.js'));
 
 async function migrateExistingMemories() {
-    console.log('🔄 Migrating existing memories to semantic search...');
+    console.error('🔄 Migrating existing memories to semantic search...');
 
     // Init model first
     await initModel();
@@ -51,12 +51,12 @@ async function migrateExistingMemories() {
     }
 
     if (filesToMigrate.length === 0) {
-        console.log('✅ No existing memories to migrate');
+        console.error('✅ No existing memories to migrate');
         fs.writeFileSync(markerFile, new Date().toISOString());
         return;
     }
 
-    console.log(`📝 Found ${filesToMigrate.length} files to migrate`);
+    console.error(`📝 Found ${filesToMigrate.length} files to migrate`);
 
     let migrated = 0;
     let failed = 0;
@@ -72,7 +72,7 @@ async function migrateExistingMemories() {
 
             // Progress indicator
             if (migrated % 5 === 0) {
-                console.log(`   Migrated ${migrated}/${filesToMigrate.length}...`);
+                console.error(`   Migrated ${migrated}/${filesToMigrate.length}...`);
             }
         } catch (err) {
             console.error(`   Failed to migrate ${path.basename(filePath)}: ${err.message}`);
@@ -80,7 +80,7 @@ async function migrateExistingMemories() {
         }
     }
 
-    console.log(`✅ Migration complete: ${migrated} files indexed, ${failed} failed`);
+    console.error(`✅ Migration complete: ${migrated} files indexed, ${failed} failed`);
 
     // Create marker file
     fs.writeFileSync(markerFile, new Date().toISOString());
