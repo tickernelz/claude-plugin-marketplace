@@ -2,6 +2,10 @@
     "name": "memory-md",
     "description": "Persistent markdown-based memory system for Claude Code",
     "main": "mcp-server.js",
+    "version": "1.2.0",
+    "engines": {
+        "node": ">=18"
+    },
     "scripts": {
         "start": "node mcp-server.js"
     },
@@ -11,5 +15,12 @@
         "mcp"
     ],
     "author": "tickernelz <zhafronadani@gmail.com>",
-    "license": "MIT"
+    "license": "MIT",
+    "dependencies": {
+        "@huggingface/transformers": "next",
+        "vectra": "^0.12.3"
+    },
+    "overrides": {
+        "onnxruntime-node": "1.23.2"
+    }
 }
