@@ -92,14 +92,9 @@ async function migrateExistingMemories() {
 }
 
 function clearModelCache() {
-    const cachePaths = [
-        path.join(os.homedir(), '.cache', 'huggingface'),
-        path.join(pluginRoot, 'node_modules', '@huggingface', 'transformers', '.cache')
-    ];
-    for (const cachePath of cachePaths) {
-        if (fs.existsSync(cachePath)) {
-            fs.rmSync(cachePath, { recursive: true, force: true });
-        }
+    const cachePath = path.join(os.homedir(), '.cache', 'huggingface');
+    if (fs.existsSync(cachePath)) {
+        fs.rmSync(cachePath, { recursive: true, force: true });
     }
 }
 
