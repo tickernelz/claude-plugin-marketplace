@@ -7,7 +7,7 @@ const os = require('os');
 
 const memoryDir = path.join(os.homedir(), '.claude', 'memory');
 const dailyDir = path.join(memoryDir, 'daily');
-const markerFile = path.join(memoryDir, '.migration-v1.3.1');
+const markerFile = path.join(memoryDir, '.migration-v1.3.2');
 
 // Check if migration already done
 if (fs.existsSync(markerFile)) {

@@ -201,25 +201,25 @@ function listFiles() {
 }
 
 function ensureGitRepo() {
-    try {
-        const gitDir = path.join(memoryDir, '.git');
-        if (!fs.existsSync(gitDir)) {
-            execSync('git init', { cwd: memoryDir, stdio: 'ignore' });
-            execSync('git config user.name "Claude Memory"', { cwd: memoryDir, stdio: 'ignore' });
-            execSync('git config user.email "memory@claude.local"', { cwd: memoryDir, stdio: 'ignore' });
+    const gitDir = path.join(memoryDir, '.git');
+    if (!fs.existsSync(gitDir)) {
+        try {
+            execSync('git init', { cwd: memoryDir, stdio: 'pipe' });
+            execSync('git config user.name "Claude Memory"', { cwd: memoryDir, stdio: 'pipe' });
+            execSync('git config user.email "memory@claude.local"', { cwd: memoryDir, stdio: 'pipe' });
+        } catch (err) {
+            throw new Error(`Failed to initialize git repository: ${err.message}`);
         }
-    } catch (err) {
-        // Silently fail - git is optional
     }
 }
 
 function autoCommit(filePath, operation) {
-    try {
-        ensureGitRepo();
-        const relativePath = path.relative(memoryDir, filePath);
-        const fileName = path.basename(filePath);
+    ensureGitRepo();
+    const relativePath = path.relative(memoryDir, filePath);
+    const fileName = path.basename(filePath);
 
-        execSync(`git add "${relativePath}"`, { cwd: memoryDir, stdio: 'ignore' });
+    try {
+        execSync(`git add "${relativePath}"`, { cwd: memoryDir, stdio: 'pipe' });
 
         const messages = {
             write: `Update ${fileName}`,
@@ -229,9 +229,12 @@ function autoCommit(filePath, operation) {
         };
 
         const message = messages[operation] || `Update ${fileName}`;
-        execSync(`git commit -m "${message}"`, { cwd: memoryDir, stdio: 'ignore' });
+        execSync(`git commit -m "${message}"`, { cwd: memoryDir, stdio: 'pipe' });
     } catch (err) {
-        // Silently fail - git is optional, don't break main operation
+        // Ignore "nothing to commit" errors (exit code 1 with specific message)
+        if (!err.message.includes('nothing to commit')) {
+            throw new Error(`Failed to commit changes: ${err.message}`);
+        }
     }
 }
 

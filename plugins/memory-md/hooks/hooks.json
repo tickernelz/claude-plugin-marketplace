@@ -10,7 +10,7 @@
                     },
                     {
                         "type": "command",
-                        "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/migrate-v1.3.1.js"
+                        "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/migrate-v1.3.2.js"
                     },
                     {
                         "type": "command",
