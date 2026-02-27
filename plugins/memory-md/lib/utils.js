@@ -233,11 +233,18 @@ function ensureGitRepo() {
 
 function autoCommit(filePath, operation) {
     ensureGitRepo();
-    const relativePath = path.relative(memoryDir, filePath);
     const fileName = path.basename(filePath);
 
     try {
-        execSync(`git add "${relativePath}"`, { cwd: memoryDir, stdio: 'pipe' });
+        // Add all changes in memory directory
+        execSync('git add .', { cwd: memoryDir, stdio: 'pipe' });
+
+        // Check if there are changes to commit
+        const status = execSync('git status --porcelain', { cwd: memoryDir, encoding: 'utf-8' });
+        if (!status.trim()) {
+            // No changes to commit
+            return;
+        }
 
         const messages = {
             write: `Update ${fileName}`,
@@ -249,8 +256,8 @@ function autoCommit(filePath, operation) {
         const message = messages[operation] || `Update ${fileName}`;
         execSync(`git commit -m "${message}"`, { cwd: memoryDir, stdio: 'pipe' });
     } catch (err) {
-        // Ignore "nothing to commit" errors (exit code 1 with specific message)
-        if (!err.message.includes('nothing to commit')) {
+        // Only throw if it's not a "nothing to commit" error
+        if (!err.message.includes('nothing to commit') && !err.message.includes('nothing added to commit')) {
             throw new Error(`Failed to commit changes: ${err.message}`);
         }
     }
