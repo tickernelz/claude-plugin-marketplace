@@ -21,6 +21,9 @@ const {
 const { initModel, embedText, embedFile } = require('./lib/embedding');
 const { upsertFile, search, deleteFile: deleteFileVectors } = require('./lib/vector-store');
 
+// Resolved once the embedding model is ready; awaited inside tool handlers
+let modelReady = null;
+
 const tools = {
     memory_read: {
         description: 'Read a memory file (memory, identity, user, daily, or bootstrap)',
@@ -161,6 +164,7 @@ After writing to ${target}, ask yourself:
 `;
             // Re-index file after write
             try {
+                await modelReady;
                 const updatedContent = readFile(filePath);
                 if (updatedContent) {
                     const embedded = await embedFile(filePath, updatedContent);
@@ -177,6 +181,7 @@ After writing to ${target}, ask yourself:
             if (!query || typeof query !== 'string') {
                 return createResponse('Invalid query');
             }
+            await modelReady;
             const topK = validateMaxResults(max_results);
             const queryVector = await embedText(query);
             const results = await search(queryVector, topK);
@@ -231,6 +236,7 @@ After writing to ${target}, ask yourself:
             try {
                 editFile(filePath, oldString, newString);
                 try {
+                    await modelReady;
                     const updatedContent = readFile(filePath);
                     if (updatedContent) {
                         const embedded = await embedFile(filePath, updatedContent);
@@ -254,6 +260,7 @@ After writing to ${target}, ask yourself:
             const success = deleteFile(filePath);
             if (success) {
                 try {
+                    await modelReady;
                     await deleteFileVectors(filePath);
                 } catch (err) {
                     process.stderr.write(`[embedding] vector delete failed: ${err.message}\n`);
@@ -351,7 +358,7 @@ process.stdin.on('data', chunk => {
 ensureDir(memoryDir);
 ensureDir(dailyDir);
 
-initModel().catch(err => {
+modelReady = initModel().catch(err => {
     process.stderr.write(`[embedding] model init failed: ${err.message}\n`);
     process.exit(1);
 });
