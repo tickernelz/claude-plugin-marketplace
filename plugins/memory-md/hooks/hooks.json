@@ -1,5 +1,5 @@
 {
-    "description": "Memory-md hooks: auto-install dependencies and inject memory context into system prompt",
+    "description": "Memory-md hooks: auto-install dependencies, migrate existing memories, and inject memory context",
     "hooks": {
         "SessionStart": [
             {
@@ -7,6 +7,10 @@
                     {
                         "type": "command",
                         "command": "${CLAUDE_PLUGIN_ROOT}/scripts/check-deps.sh"
+                    },
+                    {
+                        "type": "command",
+                        "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/migrate-v1.3.1.js"
                     },
                     {
                         "type": "command",
