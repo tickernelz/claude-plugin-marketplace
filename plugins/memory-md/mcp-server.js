@@ -18,8 +18,8 @@ const {
     validateMaxResults
 } = require('./lib/utils');
 
-const { initModel, embedFile } = require('./lib/embedding');
-const { upsertFile } = require('./lib/vector-store');
+const { initModel, embedText, embedFile } = require('./lib/embedding');
+const { upsertFile, search } = require('./lib/vector-store');
 
 const tools = {
     memory_read: {
@@ -177,11 +177,15 @@ After writing to ${target}, ask yourself:
             if (!query || typeof query !== 'string') {
                 return createResponse('Invalid query');
             }
-            const results = searchFiles(query, max_results);
+            const topK = validateMaxResults(max_results);
+            const queryVector = await embedText(query);
+            const results = await search(queryVector, topK);
             if (results.length === 0) {
                 return createResponse(`No results for "${query}".`);
             }
-            const output = results.map(r => `${r.file}:${r.line}:${r.text}`).join('\n');
+            const output = results
+                .map(r => `${r.filePath}:${r.heading}:${r.score.toFixed(4)}:${r.text.slice(0, 200)}`)
+                .join('\n\n');
             return createResponse(`Found ${results.length} results:\n\n${output}`);
         }
 
