@@ -1,9 +1,20 @@
 {
     "name": "memory-md",
+    "version": "1.4.0",
     "description": "Persistent markdown-based memory system for Claude Code",
     "author": {
         "name": "tickernelz",
         "email": "zhafronadani@gmail.com"
     },
-    "license": "MIT"
+    "homepage": "https://github.com/tickernelz/claude-plugin-marketplace/tree/main/plugins/memory-md",
+    "repository": "https://github.com/tickernelz/claude-plugin-marketplace",
+    "license": "MIT",
+    "keywords": ["memory", "persistence", "markdown", "mcp", "context"],
+    "hooks": ["./hooks/hooks.json"],
+    "mcpServers": {
+        "memory-md-server": {
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/mcp-server.js"]
+        }
+    }
 }
