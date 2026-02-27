@@ -231,36 +231,35 @@ function ensureGitRepo() {
     }
 }
 
-function autoCommit(filePath, operation) {
+function commitChanges(message) {
     ensureGitRepo();
-    const fileName = path.basename(filePath);
 
     try {
-        // Add all changes in memory directory
         execSync('git add .', { cwd: memoryDir, stdio: 'pipe' });
 
-        // Check if there are changes to commit
         const status = execSync('git status --porcelain', { cwd: memoryDir, encoding: 'utf-8' });
         if (!status.trim()) {
-            // No changes to commit
             return;
         }
 
-        const messages = {
-            write: `Update ${fileName}`,
-            append: `Append to ${fileName}`,
-            edit: `Edit ${fileName}`,
-            delete: `Delete ${fileName}`
-        };
-
-        const message = messages[operation] || `Update ${fileName}`;
         execSync(`git commit -m "${message}"`, { cwd: memoryDir, stdio: 'pipe' });
     } catch (err) {
-        // Only throw if it's not a "nothing to commit" error
         if (!err.message.includes('nothing to commit') && !err.message.includes('nothing added to commit')) {
             throw new Error(`Failed to commit changes: ${err.message}`);
         }
     }
+}
+
+function autoCommit(filePath, operation) {
+    const fileName = path.basename(filePath);
+    const messages = {
+        write: `Update ${fileName}`,
+        append: `Append to ${fileName}`,
+        edit: `Edit ${fileName}`,
+        delete: `Delete ${fileName}`
+    };
+    const message = messages[operation] || `Update ${fileName}`;
+    commitChanges(message);
 }
 
 module.exports = {
@@ -285,5 +284,6 @@ module.exports = {
     validateMaxResults,
     getFilePath,
     searchFiles,
-    listFiles
+    listFiles,
+    commitChanges
 };

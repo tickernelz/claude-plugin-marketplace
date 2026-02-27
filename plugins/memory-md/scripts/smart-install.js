@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { execSync } = require('child_process');
+const { commitChanges } = require(path.join(__dirname, '..', 'lib', 'utils'));
 
 const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT;
 if (!pluginRoot) {
@@ -101,7 +102,9 @@ function verifyCriticalModules() {
 
 function ensureGitRepo() {
     const gitDir = path.join(memoryDir, '.git');
-    if (!fs.existsSync(gitDir)) {
+    const isNewRepo = !fs.existsSync(gitDir);
+
+    if (isNewRepo) {
         try {
             if (!fs.existsSync(memoryDir)) {
                 fs.mkdirSync(memoryDir, { recursive: true });
@@ -114,6 +117,8 @@ function ensureGitRepo() {
             throw new Error(`Failed to initialize git repository: ${err.message}`);
         }
     }
+
+    return isNewRepo;
 }
 
 function clearModelCache() {
@@ -204,6 +209,8 @@ async function embedExistingMemories() {
     console.error(`[INFO] Embedding complete: ${embedded} files indexed, ${failed} failed`);
 
     fs.writeFileSync(EMBED_MARKER, new Date().toISOString());
+
+    commitChanges('Initial embedding of existing memories');
 }
 
 async function run() {
@@ -215,7 +222,17 @@ async function run() {
         }
 
         // Step 2: Initialize git repo if needed
-        ensureGitRepo();
+        const isNewRepo = ensureGitRepo();
+
+        if (isNewRepo) {
+            const hasExistingFiles =
+                ['MEMORY.md', 'IDENTITY.md', 'USER.md'].some(f => fs.existsSync(path.join(memoryDir, f))) ||
+                (fs.existsSync(dailyDir) && fs.readdirSync(dailyDir).some(f => f.endsWith('.md')));
+
+            if (hasExistingFiles) {
+                commitChanges('Initial commit');
+            }
+        }
 
         // Step 3: Embed existing memories if needed
         if (needsEmbedding()) {
