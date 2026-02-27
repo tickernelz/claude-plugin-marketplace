@@ -215,11 +215,13 @@ async function embedExistingMemories() {
 
 async function run() {
     try {
+        // Step 1: Install dependencies if needed
         if (needsInstall()) {
             installDeps();
             verifyCriticalModules();
         }
 
+        // Step 2: Initialize git repo if needed
         const isNewRepo = ensureGitRepo();
 
         if (isNewRepo) {
@@ -232,17 +234,29 @@ async function run() {
             }
         }
 
+        // Step 3: Embed existing memories if needed
         if (needsEmbedding()) {
-            embedExistingMemories()
-                .then(() => console.error('[INFO] Background embedding complete'))
-                .catch(err => console.error('[WARN] Background embedding failed:', err.message));
+            await embedExistingMemories();
         }
 
         cleanup();
     } catch (err) {
-        console.error('[ERROR] Installation failed:', err.message);
-        cleanup();
-        process.exit(1);
+        if (err.message.includes('Protobuf parsing failed') || err.message.includes('mutex lock failed')) {
+            console.error('[WARN] Model cache corrupt, clearing and retrying...');
+            try {
+                clearModelCache();
+                await embedExistingMemories();
+                cleanup();
+            } catch (retryErr) {
+                console.error('[ERROR] Embedding failed after retry:', retryErr.message);
+                cleanup();
+                process.exit(1);
+            }
+        } else {
+            console.error('[ERROR] Installation failed:', err.message);
+            cleanup();
+            process.exit(1);
+        }
     }
 }
 

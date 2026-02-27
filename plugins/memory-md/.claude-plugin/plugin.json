@@ -1,6 +1,6 @@
 {
     "name": "memory-md",
-    "version": "1.4.3",
+    "version": "1.4.2",
     "description": "Persistent markdown-based memory system for Claude Code",
     "author": {
         "name": "tickernelz",
