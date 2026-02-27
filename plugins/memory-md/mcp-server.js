@@ -19,7 +19,7 @@ const {
 } = require('./lib/utils');
 
 const { initModel, embedText, embedFile } = require('./lib/embedding');
-const { upsertFile, search } = require('./lib/vector-store');
+const { upsertFile, search, deleteFile: deleteFileVectors } = require('./lib/vector-store');
 
 const tools = {
     memory_read: {
@@ -230,6 +230,15 @@ After writing to ${target}, ask yourself:
 
             try {
                 editFile(filePath, oldString, newString);
+                try {
+                    const updatedContent = readFile(filePath);
+                    if (updatedContent) {
+                        const embedded = await embedFile(filePath, updatedContent);
+                        await upsertFile(filePath, embedded);
+                    }
+                } catch (err) {
+                    process.stderr.write(`[embedding] re-index after edit failed: ${err.message}\n`);
+                }
                 return createResponse(`Edited ${target}`);
             } catch (error) {
                 return createResponse(error.message || `Failed to edit ${target}`);
@@ -243,6 +252,13 @@ After writing to ${target}, ask yourself:
                 return createResponse('Invalid target');
             }
             const success = deleteFile(filePath);
+            if (success) {
+                try {
+                    await deleteFileVectors(filePath);
+                } catch (err) {
+                    process.stderr.write(`[embedding] vector delete failed: ${err.message}\n`);
+                }
+            }
             return createResponse(success ? `Deleted ${target}` : `Failed to delete ${target}`);
         }
 
