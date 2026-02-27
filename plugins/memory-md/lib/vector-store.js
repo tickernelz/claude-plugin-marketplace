@@ -7,23 +7,29 @@ const { memoryDir } = require('./utils');
 const rootIndexPath = path.join(memoryDir, 'root.index');
 const dailyIndexPath = path.join(memoryDir, 'daily.index');
 
-let rootIndex = null;
-let dailyIndex = null;
+let rootIndexPromise = null;
+let dailyIndexPromise = null;
 
 async function getIndex(type) {
     if (type === 'root') {
-        if (!rootIndex) {
-            rootIndex = new LocalIndex(rootIndexPath);
-            if (!(await rootIndex.isIndexCreated())) await rootIndex.createIndex();
+        if (!rootIndexPromise) {
+            rootIndexPromise = (async () => {
+                const idx = new LocalIndex(rootIndexPath);
+                if (!(await idx.isIndexCreated())) await idx.createIndex();
+                return idx;
+            })();
         }
-        return rootIndex;
+        return rootIndexPromise;
     }
     if (type === 'daily') {
-        if (!dailyIndex) {
-            dailyIndex = new LocalIndex(dailyIndexPath);
-            if (!(await dailyIndex.isIndexCreated())) await dailyIndex.createIndex();
+        if (!dailyIndexPromise) {
+            dailyIndexPromise = (async () => {
+                const idx = new LocalIndex(dailyIndexPath);
+                if (!(await idx.isIndexCreated())) await idx.createIndex();
+                return idx;
+            })();
         }
-        return dailyIndex;
+        return dailyIndexPromise;
     }
     throw new Error(`Unknown index type: ${type}`);
 }
@@ -33,6 +39,9 @@ function getIndexType(filePath) {
 }
 
 async function upsertFile(filePath, embeddedChunks) {
+    if (!embeddedChunks || embeddedChunks.length === 0) {
+        throw new Error(`upsertFile called with no chunks for ${filePath}`);
+    }
     const type = getIndexType(filePath);
     const index = await getIndex(type);
 
