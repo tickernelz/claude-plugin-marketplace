@@ -18,6 +18,9 @@ const {
     validateMaxResults
 } = require('./lib/utils');
 
+const { initModel, embedFile } = require('./lib/embedding');
+const { upsertFile } = require('./lib/vector-store');
+
 const tools = {
     memory_read: {
         description: 'Read a memory file (memory, identity, user, daily, or bootstrap)',
@@ -115,7 +118,7 @@ function createResponse(text) {
     return { content: [{ type: 'text', text }] };
 }
 
-function handleToolCall(name, args) {
+async function handleToolCall(name, args) {
     switch (name) {
         case 'memory_read': {
             const { target, date } = args;
@@ -156,6 +159,16 @@ After writing to ${target}, ask yourself:
 3. Should this trigger additional memory updates (cross-referencing)?
 4. How does this connect to previous memories?
 `;
+            // Re-index file after write
+            try {
+                const updatedContent = readFile(filePath);
+                if (updatedContent) {
+                    const embedded = await embedFile(filePath, updatedContent);
+                    await upsertFile(filePath, embedded);
+                }
+            } catch (err) {
+                process.stderr.write(`[embedding] upsert failed: ${err.message}\n`);
+            }
             return createResponse(`${mode === 'overwrite' ? 'Wrote to' : 'Appended to'} ${target}.${reflectionPrompt}`);
         }
 
@@ -253,9 +266,9 @@ const handlers = {
         };
     },
 
-    'tools/call': params => {
+    'tools/call': async params => {
         const { name, arguments: args } = params;
-        return handleToolCall(name, args || {});
+        return await handleToolCall(name, args || {});
     },
 
     ping: () => {
@@ -302,12 +315,13 @@ process.stdin.on('data', chunk => {
         const { id, method, params } = message;
 
         if (handlers[method]) {
-            try {
-                const result = handlers[method](params || {});
-                sendResponse(id, result);
-            } catch (err) {
-                sendError(id, -32603, `Internal error: ${err.message}`);
-            }
+            Promise.resolve(handlers[method](params || {}))
+                .then(result => {
+                    sendResponse(id, result);
+                })
+                .catch(err => {
+                    sendError(id, -32603, `Internal error: ${err.message}`);
+                });
         } else {
             sendError(id, -32601, `Method not found: ${method}`);
         }
@@ -316,3 +330,8 @@ process.stdin.on('data', chunk => {
 
 ensureDir(memoryDir);
 ensureDir(dailyDir);
+
+initModel().catch(err => {
+    process.stderr.write(`[embedding] model init failed: ${err.message}\n`);
+    process.exit(1);
+});
