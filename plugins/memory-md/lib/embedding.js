@@ -1,5 +1,7 @@
 'use strict';
 
+const crypto = require('crypto');
+
 let pipeline = null;
 let embedder = null;
 
@@ -17,6 +19,10 @@ async function embedText(text) {
     return Array.from(output.data);
 }
 
+function hashContent(text) {
+    return crypto.createHash('sha256').update(text).digest('hex');
+}
+
 function chunkMarkdown(content, filePath) {
     const lines = content.split('\n');
     const chunks = [];
@@ -27,7 +33,10 @@ function chunkMarkdown(content, filePath) {
         if (/^#{2,3}\s/.test(line)) {
             if (currentLines.length > 0) {
                 const text = currentLines.join('\n').trim();
-                if (text) chunks.push({ text, heading: currentHeading, filePath });
+                if (text) {
+                    const hash = hashContent(text);
+                    chunks.push({ text, heading: currentHeading, filePath, hash });
+                }
             }
             currentHeading = line.replace(/^#+\s/, '').trim();
             currentLines = [];
@@ -38,7 +47,10 @@ function chunkMarkdown(content, filePath) {
 
     if (currentLines.length > 0) {
         const text = currentLines.join('\n').trim();
-        if (text) chunks.push({ text, heading: currentHeading, filePath });
+        if (text) {
+            const hash = hashContent(text);
+            chunks.push({ text, heading: currentHeading, filePath, hash });
+        }
     }
 
     return chunks;
@@ -49,9 +61,17 @@ async function embedFile(filePath, content) {
     const result = [];
     for (const chunk of chunks) {
         const vector = await embedText(chunk.text);
-        result.push({ vector, metadata: { filePath: chunk.filePath, heading: chunk.heading, text: chunk.text } });
+        result.push({
+            vector,
+            metadata: {
+                filePath: chunk.filePath,
+                heading: chunk.heading,
+                text: chunk.text,
+                hash: chunk.hash
+            }
+        });
     }
     return result;
 }
 
-module.exports = { initModel, embedText, chunkMarkdown, embedFile };
+module.exports = { initModel, embedText, chunkMarkdown, embedFile, hashContent };

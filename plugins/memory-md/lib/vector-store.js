@@ -46,14 +46,35 @@ async function upsertFile(filePath, embeddedChunks) {
     const index = await getIndex(type);
 
     const existing = await index.listItems();
+    const existingByHash = new Map();
+    const toDelete = [];
+
     for (const item of existing) {
         if (item.metadata && item.metadata.filePath === filePath) {
-            await index.deleteItem(item.id);
+            if (item.metadata.hash) {
+                existingByHash.set(item.metadata.hash, item.id);
+            } else {
+                toDelete.push(item.id);
+            }
         }
     }
 
+    const newHashes = new Set(embeddedChunks.map(c => c.metadata.hash));
+
+    for (const [hash, id] of existingByHash) {
+        if (!newHashes.has(hash)) {
+            toDelete.push(id);
+        }
+    }
+
+    for (const id of toDelete) {
+        await index.deleteItem(id);
+    }
+
     for (const { vector, metadata } of embeddedChunks) {
-        await index.insertItem({ vector, metadata });
+        if (!existingByHash.has(metadata.hash)) {
+            await index.insertItem({ vector, metadata });
+        }
     }
 }
 
