@@ -9,13 +9,6 @@ const memoryDir = path.join(os.homedir(), '.claude', 'memory');
 const dailyDir = path.join(memoryDir, 'daily');
 const markerFile = path.join(memoryDir, '.migration-v1.3.3');
 const lockFile = path.join(memoryDir, '.migration-v1.3.3.lock');
-const modelCacheDir = path.join(
-    os.homedir(),
-    '.cache',
-    'huggingface',
-    'hub',
-    'models--nomic-ai--nomic-embed-text-v1.5'
-);
 
 if (fs.existsSync(markerFile)) {
     process.exit(0);
@@ -98,6 +91,18 @@ async function migrateExistingMemories() {
     fs.writeFileSync(markerFile, new Date().toISOString());
 }
 
+function clearModelCache() {
+    const cachePaths = [
+        path.join(os.homedir(), '.cache', 'huggingface'),
+        path.join(pluginRoot, 'node_modules', '@huggingface', 'transformers', '.cache')
+    ];
+    for (const cachePath of cachePaths) {
+        if (fs.existsSync(cachePath)) {
+            fs.rmSync(cachePath, { recursive: true, force: true });
+        }
+    }
+}
+
 async function runMigration() {
     try {
         await migrateExistingMemories();
@@ -105,9 +110,7 @@ async function runMigration() {
         if (err.message.includes('Protobuf parsing failed') || err.message.includes('mutex lock failed')) {
             console.error('⚠️  Model cache corrupt, clearing and retrying...');
             try {
-                if (fs.existsSync(modelCacheDir)) {
-                    fs.rmSync(modelCacheDir, { recursive: true, force: true });
-                }
+                clearModelCache();
                 await migrateExistingMemories();
             } catch (retryErr) {
                 console.error('❌ Migration failed after retry:', retryErr.message);
