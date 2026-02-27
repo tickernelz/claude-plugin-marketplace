@@ -10,7 +10,6 @@
     "repository": "https://github.com/tickernelz/claude-plugin-marketplace",
     "license": "MIT",
     "keywords": ["memory", "persistence", "markdown", "mcp", "context"],
-    "hooks": ["./hooks/hooks.json"],
     "mcpServers": {
         "memory-md-server": {
             "command": "node",
