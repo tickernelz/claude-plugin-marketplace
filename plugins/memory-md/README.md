@@ -11,6 +11,17 @@ Persistent markdown-based memory system for Claude Code with MCP protocol.
 - **Auto context injection** - Memory loaded at session start
 - **Proactive updates** - AI updates memory without prompting
 
+## v1.3.0 — Semantic Search
+
+`memory_search` now uses semantic vector search (`nomic-embed-text-v1.5`, ~70MB model download on first run).
+
+**Upgrade steps:**
+
+1. Run `npm install` in the plugin directory
+2. First run downloads model (~70MB) — MCP server starts slower once, then uses cached model
+
+**Output format change:** results now include `section` and `score` fields in format `filePath:section:score:text`.
+
 ## Installation
 
 ```bash
