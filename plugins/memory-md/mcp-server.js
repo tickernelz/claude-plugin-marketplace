@@ -341,6 +341,10 @@ process.stdin.on('data', chunk => {
 
         const { id, method, params } = message;
 
+        if (id === undefined) {
+            continue;
+        }
+
         if (handlers[method]) {
             Promise.resolve(handlers[method](params || {}))
                 .then(result => {
