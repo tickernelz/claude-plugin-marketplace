@@ -146,11 +146,21 @@ You MUST proactively update daily logs without being asked:
 
 Each file has ONE purpose. Never duplicate information.
 
-| File | Content | When to Write |
-|------|---------|---------------|
-| **USER.md** | User's personal info, preferences | When you learn about the human |
-| **IDENTITY.md** | AI's persona, behavior rules | When defining how you should act |
-| **MEMORY.md** | Technical facts, decisions | When learning about projects/code |
+| File | Content | When to Write | Limit |
+|------|---------|---------------|-------|
+| **USER.md** | User's personal info, preferences | When you learn about the human | No limit |
+| **IDENTITY.md** | AI's persona, behavior rules | When defining how you should act | No limit |
+| **MEMORY.md** | Technical facts, decisions | When learning about projects/code | **MAX 1000 LINES** |
+
+**MEMORY.md Line Limit (CRITICAL):**
+- MEMORY.md is limited to **1000 lines maximum** to prevent context bloat
+- If you attempt to write/edit and exceed this limit, you will get an error
+- When limit is reached, you MUST:
+  1. Ask user which sections are outdated or no longer important
+  2. Use \`memory_edit\` to remove or consolidate old content
+  3. Then proceed with the new write/edit operation
+- Keep MEMORY.md focused on current, relevant technical knowledge
+- Archive old project info to daily logs or remove entirely
 
 **Examples:**
 - "My name is Zhafron" → USER.md

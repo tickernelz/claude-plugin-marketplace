@@ -10,6 +10,7 @@ const dailyDir = path.join(memoryDir, 'daily');
 const MAX_BUFFER_SIZE = 1024 * 1024;
 const MAX_CONTENT_SIZE = 100 * 1024;
 const MAX_RESULTS = 100;
+const MAX_MEMORY_LINES = 1000;
 
 function ensureDir(dir) {
     if (!fs.existsSync(dir)) {
@@ -32,13 +33,29 @@ function writeFile(filePath, content) {
     fs.renameSync(tmp, filePath);
 }
 
+function checkMemoryLineLimit(filePath, content) {
+    const fileName = path.basename(filePath);
+    if (fileName === 'MEMORY.md') {
+        const lineCount = content.split('\n').length;
+        if (lineCount > MAX_MEMORY_LINES) {
+            throw new Error(
+                `MEMORY.md exceeds ${MAX_MEMORY_LINES} line limit (current: ${lineCount} lines). ` +
+                    `Please use memory_edit to remove outdated or unimportant content before adding new entries. ` +
+                    `Ask the user which sections to remove or consolidate.`
+            );
+        }
+    }
+}
+
 function appendFile(filePath, content) {
     ensureDir(path.dirname(filePath));
     const existing = readFile(filePath) || '';
     const timestamp = getLocalTimestamp();
     const stamped = `<!-- ${timestamp} -->\n${content}`;
     const separator = existing.trim() ? '\n\n' : '';
-    writeFile(filePath, existing + separator + stamped);
+    const newContent = existing + separator + stamped;
+    checkMemoryLineLimit(filePath, newContent);
+    writeFile(filePath, newContent);
     autoCommit(filePath, 'append');
 }
 
@@ -58,6 +75,7 @@ function editFile(filePath, oldString, newString) {
     }
 
     const updatedContent = content.replace(oldString, newString);
+    checkMemoryLineLimit(filePath, updatedContent);
     writeFile(filePath, updatedContent);
     autoCommit(filePath, 'edit');
 }
