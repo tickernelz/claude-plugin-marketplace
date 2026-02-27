@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { execSync } = require('child_process');
 
 const homeDir = os.homedir();
 const memoryDir = path.join(homeDir, '.claude', 'memory');
@@ -38,6 +39,7 @@ function appendFile(filePath, content) {
     const stamped = `<!-- ${timestamp} -->\n${content}`;
     const separator = existing.trim() ? '\n\n' : '';
     writeFile(filePath, existing + separator + stamped);
+    autoCommit(filePath, 'append');
 }
 
 function editFile(filePath, oldString, newString) {
@@ -56,14 +58,14 @@ function editFile(filePath, oldString, newString) {
     }
 
     const updatedContent = content.replace(oldString, newString);
-    const timestamp = getLocalTimestamp();
-    const stampedContent = `<!-- last updated: ${timestamp} -->\n${updatedContent}`;
-    writeFile(filePath, stampedContent);
+    writeFile(filePath, updatedContent);
+    autoCommit(filePath, 'edit');
 }
 
 function deleteFile(filePath) {
     try {
         fs.unlinkSync(filePath);
+        autoCommit(filePath, 'delete');
         return true;
     } catch {
         return false;
@@ -196,6 +198,41 @@ function listFiles() {
     } catch {}
 
     return { root, daily };
+}
+
+function ensureGitRepo() {
+    try {
+        const gitDir = path.join(memoryDir, '.git');
+        if (!fs.existsSync(gitDir)) {
+            execSync('git init', { cwd: memoryDir, stdio: 'ignore' });
+            execSync('git config user.name "Claude Memory"', { cwd: memoryDir, stdio: 'ignore' });
+            execSync('git config user.email "memory@claude.local"', { cwd: memoryDir, stdio: 'ignore' });
+        }
+    } catch (err) {
+        // Silently fail - git is optional
+    }
+}
+
+function autoCommit(filePath, operation) {
+    try {
+        ensureGitRepo();
+        const relativePath = path.relative(memoryDir, filePath);
+        const fileName = path.basename(filePath);
+
+        execSync(`git add "${relativePath}"`, { cwd: memoryDir, stdio: 'ignore' });
+
+        const messages = {
+            write: `Update ${fileName}`,
+            append: `Append to ${fileName}`,
+            edit: `Edit ${fileName}`,
+            delete: `Delete ${fileName}`
+        };
+
+        const message = messages[operation] || `Update ${fileName}`;
+        execSync(`git commit -m "${message}"`, { cwd: memoryDir, stdio: 'ignore' });
+    } catch (err) {
+        // Silently fail - git is optional, don't break main operation
+    }
 }
 
 module.exports = {
