@@ -1,9 +1,13 @@
 {
-    "description": "Memory-md hook that injects memory context into system prompt and handles first-run setup",
+    "description": "Memory-md hooks: auto-install dependencies and inject memory context into system prompt",
     "hooks": {
         "SessionStart": [
             {
                 "hooks": [
+                    {
+                        "type": "command",
+                        "command": "${CLAUDE_PLUGIN_ROOT}/scripts/check-deps.sh"
+                    },
                     {
                         "type": "command",
                         "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks-handlers/session-start.js"
