@@ -8,16 +8,33 @@ const os = require('os');
 const memoryDir = path.join(os.homedir(), '.claude', 'memory');
 const dailyDir = path.join(memoryDir, 'daily');
 const markerFile = path.join(memoryDir, '.migration-v1.3.3');
+const lockFile = path.join(memoryDir, '.migration-v1.3.3.lock');
+const modelCacheDir = path.join(
+    os.homedir(),
+    '.cache',
+    'huggingface',
+    'hub',
+    'models--nomic-ai--nomic-embed-text-v1.5'
+);
 
-// Check if migration already done
 if (fs.existsSync(markerFile)) {
     process.exit(0);
 }
 
-// Check if embedding modules are available
+if (fs.existsSync(lockFile)) {
+    const lockAge = Date.now() - fs.statSync(lockFile).mtimeMs;
+    if (lockAge < 300000) {
+        process.exit(0);
+    }
+    fs.unlinkSync(lockFile);
+}
+
+fs.writeFileSync(lockFile, Date.now().toString());
+
 const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT;
 if (!pluginRoot) {
     console.error('❌ CLAUDE_PLUGIN_ROOT not set');
+    if (fs.existsSync(lockFile)) fs.unlinkSync(lockFile);
     process.exit(1);
 }
 
@@ -27,12 +44,10 @@ const { upsertFile } = require(path.join(pluginRoot, 'lib', 'vector-store.js'));
 async function migrateExistingMemories() {
     console.error('🔄 Migrating existing memories to semantic search...');
 
-    // Init model first
     await initModel();
 
     const filesToMigrate = [];
 
-    // Scan root memory files
     const rootFiles = ['MEMORY.md', 'IDENTITY.md', 'USER.md'];
     for (const file of rootFiles) {
         const filePath = path.join(memoryDir, file);
@@ -41,7 +56,6 @@ async function migrateExistingMemories() {
         }
     }
 
-    // Scan daily logs
     if (fs.existsSync(dailyDir)) {
         const dailyFiles = fs
             .readdirSync(dailyDir)
@@ -70,7 +84,6 @@ async function migrateExistingMemories() {
             await upsertFile(filePath, embedded);
             migrated++;
 
-            // Progress indicator
             if (migrated % 5 === 0) {
                 console.error(`   Migrated ${migrated}/${filesToMigrate.length}...`);
             }
@@ -82,11 +95,33 @@ async function migrateExistingMemories() {
 
     console.error(`✅ Migration complete: ${migrated} files indexed, ${failed} failed`);
 
-    // Create marker file
     fs.writeFileSync(markerFile, new Date().toISOString());
 }
 
-migrateExistingMemories().catch(err => {
-    console.error('❌ Migration failed:', err.message);
-    process.exit(1);
-});
+async function runMigration() {
+    try {
+        await migrateExistingMemories();
+    } catch (err) {
+        if (err.message.includes('Protobuf parsing failed') || err.message.includes('mutex lock failed')) {
+            console.error('⚠️  Model cache corrupt, clearing and retrying...');
+            try {
+                if (fs.existsSync(modelCacheDir)) {
+                    fs.rmSync(modelCacheDir, { recursive: true, force: true });
+                }
+                await migrateExistingMemories();
+            } catch (retryErr) {
+                console.error('❌ Migration failed after retry:', retryErr.message);
+                if (fs.existsSync(lockFile)) fs.unlinkSync(lockFile);
+                process.exit(0);
+            }
+        } else {
+            console.error('❌ Migration failed:', err.message);
+            if (fs.existsSync(lockFile)) fs.unlinkSync(lockFile);
+            process.exit(0);
+        }
+    } finally {
+        if (fs.existsSync(lockFile)) fs.unlinkSync(lockFile);
+    }
+}
+
+runMigration();
